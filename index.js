@@ -3,9 +3,7 @@
 var _ = require('lodash');
 var loaderUtils = require('loader-utils');
 var elmCompiler = require('node-elm-compiler');
-var glob = require("glob");
-
-var cachedDependencies = [];
+var glob = require('glob');
 
 var defaultOptions = {
   cache: false,
