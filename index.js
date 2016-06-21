@@ -3,12 +3,14 @@
 var _ = require('lodash');
 var loaderUtils = require('loader-utils');
 var elmCompiler = require('node-elm-compiler');
+var glob = require("glob");
 
 var cachedDependencies = [];
 
 var defaultOptions = {
   cache: false,
-  yes: true
+  yes: true,
+  deps: ''
 };
 
 var getInput = function() {
@@ -23,11 +25,6 @@ var getOptions = function() {
   }, defaultOptions, globalOptions, loaderOptions);
 };
 
-var addDependencies = function(dependencies) {
-  cachedDependencies = dependencies;
-  dependencies.forEach(this.addDependency.bind(this));
-};
-
 module.exports = function() {
   this.cacheable && this.cacheable();
 
@@ -40,12 +37,16 @@ module.exports = function() {
   var input = getInput.call(this);
   var options = getOptions.call(this);
 
-  var dependencies = Promise.resolve()
-    .then(function() {
-      if (!options.cache || cachedDependencies.length === 0) {
-        return elmCompiler.findAllDependencies(input).then(addDependencies.bind(this));
-      }
-    }.bind(this));
+  var loader = this;
+  var dependencies = new Promise(function(resolve, reject){
+      glob(options.deps, function(err, files){
+          if (err){
+              return reject();
+          }
+          files.forEach(loader.addDependency);
+          return resolve();
+      })
+  });
 
   var compilation = elmCompiler.compileToString(input, options);
 
