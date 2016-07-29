@@ -32,32 +32,6 @@ See the [examples](#example) section below for the complete webpack configuratio
 
 ### Options
 
-
-#### Dependency Glob
-
-You need to specify a glob of source Elm files:
-
-```js
-    ...
-    loader: 'elm-webpack?deps=src/**/*.elm'
-    ...
-```
-
-These files will be added as dependencies and webpack watches them for changes.
-
-
-Another example:
-
-````js
-    var elmPackage = require('./elm-package.json');
-    var depsGlob = '{' + elmPackage['source-directories'].join('%2C') + '}/**/*.elm'
-
-    ...
-    loader: 'elm-webpack?deps=' + depsGlob
-    ...
-````
-
-
 #### Cache (default false)
 
 You can add `cache=true` to the loader:
@@ -100,6 +74,10 @@ All options are sent down as an `options` object to node-elm-compiler. For examp
 For a list all possible options, [consult the source](https://github.com/rtfeldman/node-elm-compiler/blob/5a4cc71/index.js#L11-L19).
 
 ## Notes
+
+#### Dependency Glob
+
+To find all dependencies this version of elm-webpack-loader reads the `elm-package.json` file (must be in directory from which webpack is run). All `*.elm` files in the  `source-directories` of `elm-package.json` are considered to be dependencies.
 
 ### Example
 
