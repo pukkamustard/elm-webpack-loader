@@ -29,7 +29,8 @@
     "glob": "^7.0.5",
     "loader-utils": "^0.2.11",
     "lodash": "^3.10.1",
-    "node-elm-compiler": "^4.0.1"
+    "node-elm-compiler": "^4.0.1",
+    "temp": "^0.8.3"
   },
   "devDependencies": {
     "chai": "^3.4.1",

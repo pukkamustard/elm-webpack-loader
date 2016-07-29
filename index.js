@@ -4,6 +4,7 @@ var _ = require('lodash');
 var loaderUtils = require('loader-utils');
 var elmCompiler = require('node-elm-compiler');
 var glob = require('glob');
+var temp = require('temp');
 
 // Load elm-package.json and build deps from 'source-directories' field
 // TODO: specify location of elm-package.json as option
@@ -55,7 +56,40 @@ module.exports = function() {
     })
   });
 
-  var compilation = elmCompiler.compileToString(input, options);
+  var compilation = new Promise(function(resolve, reject) {
+    options.output = temp.path({suffix: '.js'});
+
+    // compileToString in node-elm-compiler also does this:
+    options.processOpts = {
+      stdio: 'pipe'
+    }
+
+    var compiler = elmCompiler.compile(input, options);
+    var output = '';
+    compiler.stdout.on('data', function(chunk) {
+      output += chunk;
+    });
+    compiler.stderr.on('data', function(chunk) {
+      output += chunk;
+    });
+
+    compiler.on('close', function(exitCode) {
+      if (exitCode !== 0) {
+        temp.cleanupSync();
+        return reject(new Error('Compilation failed\n' + output));
+      }
+
+      fs.readFile(options.output, function(err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          fs.unlinkSync(options.output);
+          resolve(data);
+        }
+      });
+    });
+
+  });
 
   Promise.all([dependencies, compilation]).then(function(results) {
     var output = results[1]; // compilation output
