@@ -75,6 +75,10 @@ For a list all possible options, [consult the source](https://github.com/rtfeldm
 
 ## Notes
 
+#### Dependency Glob
+
+To find all dependencies this version of elm-webpack-loader reads the `elm-package.json` file (must be in directory from which webpack is run). All `*.elm` files in the  `source-directories` of `elm-package.json` are considered to be dependencies.
+
 ### Example
 
 You can find an example in the `example` folder.
