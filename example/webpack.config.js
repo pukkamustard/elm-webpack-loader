@@ -21,7 +21,7 @@ module.exports = {
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        loader: '../../index.js?deps=src/**/*.elm'
+        loader: '../../index.js'
       }
     ],
 

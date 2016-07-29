@@ -5,10 +5,19 @@ var loaderUtils = require('loader-utils');
 var elmCompiler = require('node-elm-compiler');
 var glob = require('glob');
 
+// Load elm-package.json and build deps from 'source-directories' field
+// TODO: specify location of elm-package.json as option
+var fs = require('fs');
+var elmPackage = JSON.parse(fs.readFileSync('./elm-package.json', 'utf8'));
+if (elmPackage['source-directories'].length > 1) {
+  var depsGlob = '{' + elmPackage['source-directories'].join(',') + '}/**/*.elm'
+} else {
+  var depsGlob = elmPackage['source-directories'][0] + '/**/*.elm'
+}
+
 var defaultOptions = {
   cache: false,
-  yes: true,
-  deps: ''
+  yes: true
 };
 
 var getInput = function() {
@@ -36,26 +45,24 @@ module.exports = function() {
   var options = getOptions.call(this);
 
   var loader = this;
-  var dependencies = new Promise(function(resolve, reject){
-      glob(options.deps, function(err, files){
-          if (err){
-              return reject();
-          }
-          files.forEach(loader.addDependency);
-          return resolve();
-      })
+  var dependencies = new Promise(function(resolve, reject) {
+    glob(depsGlob, function(err, files) {
+      if (err) {
+        return reject();
+      }
+      files.forEach(loader.addDependency);
+      return resolve();
+    })
   });
 
   var compilation = elmCompiler.compileToString(input, options);
 
-  Promise.all([dependencies, compilation])
-    .then(function(results) {
-      var output = results[1]; // compilation output
+  Promise.all([dependencies, compilation]).then(function(results) {
+    var output = results[1]; // compilation output
 
-      callback(null, output);
-    })
-    .catch(function(err) {
-      err.message = 'Compiler process exited with error ' + err.message;
-      callback(err);
-    });
+    callback(null, output);
+  }).catch(function(err) {
+    err.message = 'Compiler process exited with error ' + err.message;
+    callback(err);
+  });
 }
